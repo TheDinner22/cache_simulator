@@ -24,8 +24,8 @@ impl CacheType {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-enum ReplacementPolicy {
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ReplacementPolicy {
     LRU,
     FIFO,
 }
@@ -51,6 +51,10 @@ pub struct UserInput {
 }
 
 impl UserInput {
+    pub fn replacement_policy(&self) -> ReplacementPolicy {
+        self.replacement_policy
+    }
+
     // how I feel when understanding lifetimes: https://en.wikipedia.org/wiki/God
     pub fn break_down_binary_address<'a>(&self, address: &'a String) -> (&'a str, &'a str, &'a str) {
         let number_of_tag_bits = self.tag_size() as usize;
@@ -100,7 +104,7 @@ impl UserInput {
     }
 
     fn num_sets(&self) -> u32 {
-        self.num_sets_exp().pow(2)
+        2u32.pow(self.num_sets_exp())
     }
 
     fn tag_size(&self) -> u32 {
@@ -111,12 +115,16 @@ impl UserInput {
         self.num_sets_exp()
     }
 
+    pub fn lines_per_set(&self) -> u32 {
+        self.num_lines() / self.num_sets()
+    }
+
     fn offset_size(&self) -> u32 {
         self.line_size_exp
     }
 
     fn num_lines(&self) -> u32 {
-        self.num_lines_exp().pow(2)
+        2u32.pow(self.num_lines_exp())
     }
 }
 
