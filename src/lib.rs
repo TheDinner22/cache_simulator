@@ -1,5 +1,5 @@
-// provides one function that is basically the same as input() from python
-pub mod get_input;
+// get and parse user input
+pub mod user_input;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
