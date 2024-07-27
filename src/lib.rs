@@ -1,3 +1,6 @@
+// provides one function that is basically the same as input() from python
+pub mod get_input;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
