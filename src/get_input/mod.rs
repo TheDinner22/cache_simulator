@@ -3,9 +3,9 @@ use std::io;
 // this function is an example implementation of the 
 // generic function, F, in the get_input function
 //
-// not used anywhere in the code
-//
 // you should use a clousre instead
+//
+// this function is not used at all for the simulator
 //
 // here for educational reasons only
 fn is_number(input: &String) -> Result<(), String> {
@@ -33,6 +33,9 @@ where F: Fn(&String) -> Result<(), String>
         // read one line from stdin
         let stdin = io::stdin();
         let read_result = stdin.read_line(&mut line);
+
+        // remove whitespace
+        line = line.trim().to_string();
 
         // reading one line from stdin should never error (if it did, crash)
         if let Err(e) = read_result { panic!("{}", e); }
