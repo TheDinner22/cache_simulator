@@ -5,7 +5,19 @@ enum CacheType {
     FullyAssociative(u32),
     DirectMapped(u32),
     SetAssociative(u32), // u32 here is the n in n-way
-                         // in other-words, it represents the set-size exponent
+                         // in other-words, it represents the number of lines per set
+                         //
+                         // 2^this number  is the number of lines per set
+}
+
+impl CacheType {
+    fn set_size_exp(&self) -> u32 {
+        match self {
+            CacheType::FullyAssociative(x) => *x,
+            CacheType::DirectMapped(x) => *x,
+            CacheType::SetAssociative(x) => *x,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -55,6 +67,22 @@ impl UserInput {
         };
         
         UserInput { cache_size_exp, line_size_exp, cache_type, replacement_policy: replacement_policy.into() }
+    }
+
+    fn num_lines_exp(&self) -> u32 {
+        self.cache_size_exp - self.line_size_exp
+    }
+
+    fn num_sets_exp(&self) -> u32 {
+        self.num_lines_exp() - self.cache_type.set_size_exp()
+    }
+
+    fn tag_size(&self) -> u32 {
+        32 - self.num_sets_exp() - self.line_size_exp
+    }
+
+    fn num_lines(&self) -> u32 {
+        self.num_lines_exp().pow(2)
     }
 }
 
