@@ -1,6 +1,8 @@
 // get and parse user input
 pub mod user_input;
 
+pub mod cache;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
