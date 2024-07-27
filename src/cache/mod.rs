@@ -23,7 +23,7 @@ fn hex_str_to_binary_str(hex_str: &str) -> String {
             'd' => "1101",
             'e' => "1110",
             'f' => "1111",
-            _ => unreachable!(),
+            _ => unreachable!("given {}", c)
         })
         .fold(String::new(), |acc, e| acc + e)
 }
@@ -67,16 +67,20 @@ impl<'a> Cache<'a> {
         let lines_in_set = self.cache.get(set).expect("set must exist").len() as u32;
         let lines_per_set = self.context.lines_per_set();
         assert!(lines_in_set <= lines_per_set);
-        return lines_in_set <= lines_per_set;
+        return lines_in_set < lines_per_set;
     }
 
-    fn write(&mut self, binary_address: &String) {
+    fn write(&mut self, binary_address: &String) -> bool {
         // break address down into set, tag, offset
-        let (tag, set, _offset) = self.context.break_down_binary_address(binary_address);
+        let (tag, set, _) = self.context.break_down_binary_address(binary_address);
 
         // does it already exist? if yes we are done
         if self.contains(binary_address) {
-            return;
+            // update last accessed feild
+            self.cache.get_mut(set).unwrap().get_mut(tag).unwrap().last_access = std::time::Instant::now();
+            self.cache.get_mut(set).unwrap().get_mut(tag).unwrap().num_accesses += 1;
+
+            return true;
         }
 
         // does the set exist yet? If not create it as empty
@@ -87,7 +91,7 @@ impl<'a> Cache<'a> {
             assert!(self.cache.len() <= 2usize.pow(set.len() as u32))
         }
 
-        // is there an empty space? if so, insert there
+        // is there an empty space? if so, Insert there
         if self.empty_space(set) {
             self.cache.get_mut(set).unwrap().insert(
                 tag.into(),
@@ -98,7 +102,7 @@ impl<'a> Cache<'a> {
                     num_accesses: 0,
                 },
             );
-            return;
+            return false;
         }
 
         // determine which line to replace (which takes the replacement_policy into account)
@@ -128,8 +132,9 @@ impl<'a> Cache<'a> {
         };
 
         // make the replacement
+        self.cache.get_mut(set).unwrap().remove(&tag_to_replace).expect("cant remove something that is not there");
         self.cache.get_mut(set).unwrap().insert(
-            tag_to_replace,
+            tag.into(),
             Line {
                 addy: binary_address.into(),
                 last_access: std::time::Instant::now(),
@@ -137,10 +142,12 @@ impl<'a> Cache<'a> {
                 num_accesses: 0,
             },
         );
+        return false;
     }
 
     pub fn simulate_trace_file(&mut self, filepath: &str) {
         let mut counter = 0;
+        let mut hits = 0;
 
         for line in read_to_string(filepath)
             .expect(&format!("{} is not a valid file path", filepath))
@@ -158,13 +165,28 @@ impl<'a> Cache<'a> {
                 .strip_prefix("0x")
                 .expect("hex addresses should start with 0x");
             let binary_addy = hex_str_to_binary_str(hex_addy);
-            if ls == "l" && false{ // TODO remove never
-                todo!()
-            } else if ls == "s" || true{ // TODO remove always
-                self.write(&binary_addy);
+            if ls == "l" || ls == "s"{
+                if self.write(&binary_addy) {hits+=1;}
             } else {
-                unreachable!("{}", format!("we should only get l or s. Got {}", ls))
+                unreachable!("we should only get l or s. Got {}", ls);
             }
         }
+        dbg!(&self.cache);
+        dbg!(&counter);
+        dbg!(&hits);
+        dbg!(hits as f64 /counter as f64);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hex_to_binary_address(){
+        let hex_addy = "0x123456789ABCDeF";
+        let actual = hex_str_to_binary_str(hex_addy.strip_prefix("0x").unwrap().to_lowercase().trim());
+        let expected = "000100100011010001010110011110001001101010111100110111101111".to_string();
+        assert_eq!(actual, expected);
     }
 }
