@@ -1,7 +1,5 @@
 mod get_input;
 
-use std::{collections::HashMap, usize};
-
 use get_input::get_input;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -176,6 +174,37 @@ mod tests {
         assert_eq!(tag, "000111111111111111111111010100");
         assert_eq!(set, "");
         assert_eq!(offset, "00");
+    }
+
+    #[test]
+    fn test_decompose_binary_address_with_fa_again() {
+        let test_input = UserInput::new(5, 2, "fa".into(), "l".into());
+        // 0x1fabce50
+        let binary_address = "00011111101010111100111001010000".to_string();
+        let (tag, set, offset) = test_input.break_down_binary_address(&binary_address);
+        assert_eq!(tag, "000111111010101111001110010100");
+        assert_eq!(set, "");
+        assert_eq!(offset, "00");
+    }
+
+    #[test]
+    fn test_decompose_binary_address_with_fa_again2() {
+        let test_input = UserInput::new(5, 2, "fa".into(), "l".into());
+        // 0x1fabce50
+        let binary_address = "00011111111111111111011000101000".to_string();
+        let (tag, set, offset) = test_input.break_down_binary_address(&binary_address);
+        assert_eq!(tag, "000111111111111111110110001010");
+        assert_eq!(set, "");
+        assert_eq!(offset, "00");
+    }
+
+    #[test]
+    fn test_decompose_binary_address_with_fa_general() {
+        let test_input = UserInput::new(5, 2, "fa".into(), "l".into());
+        // 0x1fabce50
+        let binary_address = "11010110110110110110101010101010".to_string();
+        let (tag, _set, offset) = test_input.break_down_binary_address(&binary_address);
+        assert_eq!(binary_address, String::from(tag) + offset);
     }
 
     #[test]
