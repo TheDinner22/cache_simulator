@@ -77,3 +77,5 @@ If it crashes under any other circumstance, make an issue that explains how to r
 ## using this code
 
 Just credit me if you use it but feel free to fork or do whatever (I do not care at all)
+
+It's got a MIT license so you can just steal it if you want (please don't it would make me very sad).
