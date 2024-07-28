@@ -13,6 +13,8 @@ enum CacheType {
 }
 
 impl CacheType {
+    // get the set_sixe_exp
+    // and or the number of bits needed to represent the set
     fn set_size_exp(&self) -> u32 {
         match self {
             CacheType::FullyAssociative(x) => *x,
@@ -24,10 +26,11 @@ impl CacheType {
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ReplacementPolicy {
-    LRU,
+    LRU, 
     FIFO,
 }
 
+// basically the string "l" is the same as ReplacementPolicy::LRU
 impl From<String> for ReplacementPolicy {
     fn from(value: String) -> Self {
         if value.to_lowercase().trim() == "l" {
@@ -49,18 +52,24 @@ pub struct UserInput {
 }
 
 impl UserInput {
+    // getter
     pub fn replacement_policy(&self) -> ReplacementPolicy {
         self.replacement_policy
     }
 
     // how I feel when understanding lifetimes: https://en.wikipedia.org/wiki/God
+    // take some binary address and break it down into tag set and offset
+    //
+    // of course, use cache size, cache type, etc to find this info
+    // 
+    // there are some tests at the bottom of the file if you want to see an example
     pub fn break_down_binary_address<'a>(&self, address: &'a String) -> (&'a str, &'a str, &'a str) {
         let number_of_tag_bits = self.tag_size() as usize;
         let number_of_set_bits = self.num_sets_exp() as usize;
         let number_of_offset_bits = self.line_size_exp as usize;
         let total_size = number_of_set_bits + number_of_tag_bits + number_of_offset_bits;
         
-        // little sanity check
+        // little sanity check (if these don't equal 32 something is very wrong)
         assert_eq!(32, address.len());
         assert_eq!(32, total_size);
 
@@ -109,7 +118,7 @@ impl UserInput {
         32 - self.num_sets_exp() - self.line_size_exp
     }
 
-    fn set_size(&self) -> u32 {
+    fn _set_size(&self) -> u32 {
         self.num_sets_exp()
     }
 
@@ -117,7 +126,7 @@ impl UserInput {
         self.num_lines() / self.num_sets()
     }
 
-    fn offset_size(&self) -> u32 {
+    fn _offset_size(&self) -> u32 {
         self.line_size_exp
     }
 
@@ -126,11 +135,18 @@ impl UserInput {
     }
 }
 
+// the start of the program!
+// just ask the user a bunch of different things related to the cache config
+//
+// this should be stupid proof and very hard to break
+//
+// one way to break this would be to pass very large numbers
 pub fn all_user_input() -> UserInput{
     println!("This is an awesome cache simulator. By Jospeh Goodman.");
 
     let msg = "Cache size is an exponent of 2.  E.g. if the exponent is 3, the cache is 2 to the 3, or 8 bytes\nEnter the exponent for the cache size:";
-    let cache_size_exp = get_input(msg, |s| {
+    let cache_size_exp = get_input(msg, |s| { // this clousre just means that the input must be a
+                                              // number (i use it a lot in this function :P)
         s.parse::<u32>()
             .map_err(|e| e.to_string()) // if we get an error, make it a string
             .map(|_| ()) // if we get no error, return () instead of the result of parsing (we
@@ -147,7 +163,7 @@ pub fn all_user_input() -> UserInput{
 
     let msg = "What is the replacement policy? L or l for LRU, anything else for FIFO";
     let replacement_policy = get_input(msg, |s| match s.to_lowercase().trim() {
-        _ => Ok(()),
+        _ => Ok(()), // this line is a weird way of saying there is no filter (all inputs are ok)
     });
 
     let msg = "Is this cache fully associative, direct mapped, or set associative?\n Enter FA, DM, or SA";
@@ -172,7 +188,7 @@ mod tests {
         let binary_address = "00011111111111111111111101010000".to_string();
         let (tag, set, offset) = test_input.break_down_binary_address(&binary_address);
         assert_eq!(tag, "000111111111111111111111010100");
-        assert_eq!(set, "");
+        assert_eq!(set, ""); // one set means we need 0 bits to identify it
         assert_eq!(offset, "00");
     }
 

@@ -8,7 +8,7 @@ use std::io;
 // this function is not used at all for the simulator
 //
 // here for educational reasons only
-fn is_number(input: &String) -> Result<(), String> {
+fn _is_number(input: &String) -> Result<(), String> {
     let can_parse_to_number = input.parse::<u32>().is_ok();
     if can_parse_to_number {
         return Ok(());
@@ -18,9 +18,15 @@ fn is_number(input: &String) -> Result<(), String> {
     }
 }
 
+// this function looks scary!
+// do you know input() from python? its just that with a filter!
+//
+// this function lets us write code that means "get input until the user gives us a number" or
+// "get input until the user gives us one of 'fa', 'vf', 'df'"
 pub fn get_input<F>(prompt: &str, filter: F) -> String 
 // the generic type F is a function that takes a reference to a string and returns a result
 // If the result is Ok(()), the string we passed in matches the filter and we can return
+//
 // if the result is Err(String), the string returned as the Err varient should be a meaningful
 // error message (it will be printed to stdout)
 where F: Fn(&String) -> Result<(), String>
@@ -45,7 +51,7 @@ where F: Fn(&String) -> Result<(), String>
         match filter(&line) {
             Ok(_) => return line,
             Err(err_msg) => {
-                println!("{}", err_msg);
+                println!("{}\n", err_msg);
                 continue;
             },
         };
