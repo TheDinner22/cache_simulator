@@ -3,7 +3,48 @@ use cda_cache_sim::cache::Cache;
 
 use plotly::{Plot, Scatter};
 
+use cfonts::{ say, Align, BgColors, Colors, Env, Fonts, Options };
+
+fn fancy_ascii_art(){
+	say(Options {
+		text: String::from("Cache Simulator"),
+		font: Fonts::FontBlock,
+		colors: vec![Colors::System],
+		background: BgColors::Transparent,
+		align: Align::Center,
+		letter_spacing: 1,
+		line_height: 1,
+		spaceless: false,
+		max_length: 0,
+		gradient: Vec::new(),
+		independent_gradient: false,
+		transition_gradient: false,
+		raw_mode: false,
+		env: Env::Cli,
+		..Options::default()
+	});
+	say(Options {
+		text: String::from("By: Joseph Goodman"),
+		font: Fonts::FontSimple3d,
+		colors: vec![Colors::System],
+		background: BgColors::Black,
+		align: Align::Left,
+		letter_spacing: 1,
+		line_height: 1,
+		spaceless: false,
+		max_length: 0,
+		gradient: Vec::new(),
+		independent_gradient: false,
+		transition_gradient: true,
+		raw_mode: false,
+		env: Env::Cli,
+		..Options::default()
+	});
+}
+
 fn main() {
+    fancy_ascii_art();
+
     const FILE_PATH: &str = "trace_files/gcc.trace";
 
     let ui = all_user_input();
