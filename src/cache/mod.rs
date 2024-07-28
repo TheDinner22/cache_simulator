@@ -28,8 +28,8 @@ fn hex_str_to_binary_str(hex_str: &str) -> String {
         .fold(String::new(), |acc, e| acc + e)
 }
 
-#[derive(Debug, PartialEq, Eq)]
-struct Line {
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Line {
     pub addy: String,
     pub last_access: std::time::Instant,
     pub birthday: std::time::Instant,
@@ -145,7 +145,7 @@ impl<'a> Cache<'a> {
         return false;
     }
 
-    pub fn simulate_trace_file(&mut self, filepath: &str) {
+    pub fn simulate_trace_file(&mut self, filepath: &str) -> SimResults{
         let mut counter = 0;
         let mut hits = 0;
 
@@ -171,11 +171,26 @@ impl<'a> Cache<'a> {
                 unreachable!("we should only get l or s. Got {}", ls);
             }
         }
-        dbg!(&self.cache);
-        dbg!(&counter);
-        dbg!(&hits);
-        dbg!(hits as f64 /counter as f64);
+
+        let mut cloned_map = HashMap::new();
+
+        self.cache.iter().for_each(|(set_id, lines)| {
+            let mut set = HashMap::new();
+            lines.iter().for_each(|(tag_id, line)| {
+                set.insert(tag_id.clone(), line.clone());
+            });
+            cloned_map.insert(set_id.clone(), set);
+        });
+
+        SimResults{ final_cache: cloned_map, hits, accesses: counter }
     }
+}
+
+#[derive(Debug)]
+pub struct SimResults {
+    pub final_cache: HashMap<String, HashMap<String, Line>>,
+    pub hits: u32,
+    pub accesses: u32
 }
 
 #[cfg(test)]
