@@ -148,6 +148,8 @@ impl<'a> Cache<'a> {
     pub fn simulate_trace_file(&mut self, filepath: &str) -> SimResults{
         let mut counter = 0;
         let mut hits = 0;
+        let mut accesses_history = Vec::new();
+        let mut hit_history = Vec::new();
 
         for line in read_to_string(filepath)
             .expect(&format!("{} is not a valid file path", filepath))
@@ -155,6 +157,9 @@ impl<'a> Cache<'a> {
         {
             let line = line.trim().to_lowercase();
             counter += 1; // just counting the number of lines in the file
+
+            hit_history.push(hits);
+            accesses_history.push(counter);
 
             // get ls and address from the line
             let mut line_iter = line.split(' ').take(2);
@@ -182,7 +187,7 @@ impl<'a> Cache<'a> {
             cloned_map.insert(set_id.clone(), set);
         });
 
-        SimResults{ final_cache: cloned_map, hits, accesses: counter }
+        SimResults{ final_cache: cloned_map, hits, accesses: counter, hit_history, accesses_history }
     }
 }
 
@@ -190,7 +195,9 @@ impl<'a> Cache<'a> {
 pub struct SimResults {
     pub final_cache: HashMap<String, HashMap<String, Line>>,
     pub hits: u32,
-    pub accesses: u32
+    pub accesses: u32,
+    pub hit_history: Vec<u32>,
+    pub accesses_history: Vec<u32>,
 }
 
 #[cfg(test)]
